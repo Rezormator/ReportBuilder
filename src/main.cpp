@@ -1,5 +1,6 @@
 #include "Configurations/MenuOptions.h"
 #include "UI/UI.h"
+#include "XlsxHandler/XlsxHandler.h"
 
 int main() {
     UI::ApplyUkrainianLanguage();
