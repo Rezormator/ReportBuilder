@@ -42,22 +42,30 @@ namespace XlsxHandler {
         return data;
     }
 
-    void WriteXlsxFile(const std::string &filePath, const int sheetName, std::vector<std::vector<std::string> > &data, const std::vector<std::string> &headerRow) {
+    void WriteXlsxFile(const std::string &filePath, const std::string &sheetName, std::vector<std::vector<std::string> > &data,
+                       const std::vector<std::string> &headerRow, const std::string &reportName) {
         OpenXLSX::XLDocument document;
         document.open(filePath);
 
         auto book = document.workbook();
-        const auto sheet = book.worksheet(sheetName);
+        if (book.worksheetExists(sheetName)) {
+            book.deleteSheet(sheetName);
+        }
+        book.addWorksheet(sheetName);
+        auto sheet = book.worksheet(sheetName);
+
+        sheet.mergeCells("A1:" + OpenXLSX::XLCellReference(1, static_cast<uint16_t>(headerRow.size())).address());
+        sheet.cell(1, 1).value() = reportName;
 
         data.insert(data.begin(), headerRow);
 
         for (int row = 1; row <= data.size(); row++) {
-            for (int column = 1; column <= data.at(row).size(); column++) {
-                sheet.cell(row, column).value() = data[row][column];
+            for (int column = 1; column <= data[row - 1].size(); column++) {
+                sheet.cell(row + 1, column).value() = data[row - 1][column - 1];
             }
         }
 
+        document.save();
         document.close();
     }
-
 }

@@ -4,8 +4,8 @@
 #include <vector>
 
 namespace MenuOptions {
-    inline const std::vector<std::string> STOR_TYPES = {"Концепт", "Дисконт"};
-    inline const std::vector<std::string> REPORT_TYPES {"Текстиль", "Взуття"};
+    inline const std::vector<std::string> STOR_TYPE_OPTIONS = {"Концепт", "Дисконт"};
+    inline const std::vector<std::string> REPORT_TYPE_OPTIONS {"Текстиль", "Взуття"};
 
     enum STOR_TYPES {
         Concept,
@@ -14,8 +14,7 @@ namespace MenuOptions {
 
     enum REPORT_TYPES {
         Textile,
-        Footwear
+        Footwear,
+        Exit
     };
-
-    constexpr int Exit = 2;
 }
