@@ -68,4 +68,16 @@ namespace XlsxHandler {
         document.save();
         document.close();
     }
+
+    void DeleteSheet(const std::string &filePath, const std::string &sheetName) {
+        OpenXLSX::XLDocument document;
+        document.open(filePath);
+
+        if (auto book = document.workbook(); book.worksheetExists(sheetName)) {
+            book.deleteSheet(sheetName);
+        }
+
+        document.save();
+        document.close();
+    }
 }

@@ -1,6 +1,7 @@
 #include "UI.h"
 #include <iostream>
 #include <conio.h>
+#include <iomanip>
 #include <windows.h>
 #include "Color.h"
 #include "Key.h"
@@ -50,10 +51,11 @@ namespace UI {
         return selected;
     }
 
-    void WaitKeyPress(const int Key, const int rowsCount) {
-        std::cout << "Рядків документу згенеровано: " << rowsCount << std::endl;
-        std::cout << "Натисність Enter для проовження..." << std::endl;
-        while (_getch() != Key);
+    void ShowMessage(const std::string &message) {
+        std::cout << message << std::endl;
     }
 
+    void WaitKeyPress(const int Key) {
+        while (_getch() != Key);
+    }
 }

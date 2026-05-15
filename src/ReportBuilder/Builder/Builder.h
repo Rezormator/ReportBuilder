@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "../../Configurations/ReportConfigurations.h"
+#include "../ReportConfigurations.h"
 #include "../../Product/Product.h"
 
 namespace Builder {

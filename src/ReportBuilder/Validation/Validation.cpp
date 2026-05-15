@@ -25,8 +25,11 @@ namespace Validation {
                     canBeAdded = product.totalCount < configurations.minCount;
                     break;
                 case Check::UnderMinSizeCount:
-                    canBeAdded = product.sizes.size() <= configurations.minSizeCount;
+                    canBeAdded = product.sizes.size() < configurations.minSizeCount;
                     break;
+                case Check::AboveMinSizeCount:
+                    canBeAdded = product.sizes.size() >= configurations.minSizeCount;
+                break;
                 default:
                     break;
             }

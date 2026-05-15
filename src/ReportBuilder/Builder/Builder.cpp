@@ -1,8 +1,7 @@
 #include "Builder.h"
 #include <algorithm>
 #include <iostream>
-
-#include "../../Configurations/SizePriority.h"
+#include "../Priority/SizePriority.h"
 #include "../Priority/Priority.h"
 #include "../Validation/Validation.h"
 
@@ -16,12 +15,14 @@ namespace Builder {
                 continue;
             }
 
-            const auto maxCount = product.totalCount < configurations.maxCount
-                                      ? product.totalCount
-                                      : configurations.maxCount;
+            const auto maxCount = product.totalCount < configurations.maxCount ? product.totalCount : configurations.maxCount;
 
             auto currentSizes = Priority::GetCurrentSizes(product);
             auto targetSizes = Priority::GetTargetSizes(product, maxCount);
+
+            if (currentSizes.size() < targetSizes.size()) {
+                currentSizes.insert(currentSizes.end(), targetSizes.size() - currentSizes.size(), false);
+            }
 
             std::map<std::string, int> addSizesCount;
             for (const auto &[size, _]: product.sizes) {
@@ -69,6 +70,10 @@ namespace Builder {
 
             auto currentSizes = Priority::GetCurrentSizes(product);
             auto targetSizes = Priority::GetTargetSizes(product, maxCount);
+
+            if (currentSizes.size() < targetSizes.size()) {
+                currentSizes.insert(currentSizes.end(), targetSizes.size() - currentSizes.size(), false);
+            }
 
             std::map<std::string, std::pair<int, int>> processSizesCount;
             for (const auto &[size, _]: product.sizes) {
@@ -204,15 +209,11 @@ namespace Builder {
 
     std::vector<std::vector<std::string>> AddFootwearSizes(std::map<std::string, Product> &products, const ReportConfigurations &configurations) {
         std::vector<std::vector<std::string>> addSizes;
-        const auto validation = std::vector{Validation::Check::MinTotalCount, Validation::Check::MaxHallCount, Validation::Check::HasStorageStock};
+        const auto validation = std::vector{Validation::Check::MinTotalCount, Validation::Check::MaxHallCount, Validation::Check::HasStorageStock, Validation::Check::AboveMinSizeCount};
 
         for (auto &[id, product]: products) {
             if (!CanProductBeAdded(product, validation, configurations)) {
                 continue;
-            }
-
-            if (id == "GZ5891") {
-                auto d = 0;
             }
 
             const auto maxCount = product.totalCount < configurations.maxCount

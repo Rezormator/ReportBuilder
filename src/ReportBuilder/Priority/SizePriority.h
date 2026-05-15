@@ -2,8 +2,7 @@
 
 #include <string>
 #include <vector>
-
-#include "../Product/TargetGroup.h"
+#include "../../Product/TargetGroup.h"
 
 namespace SizePriority {
     inline std::vector<std::string> MEN_TEXTILE {

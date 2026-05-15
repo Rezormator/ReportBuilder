@@ -1,7 +1,5 @@
 #include "Priority.h"
-
 #include <algorithm>
-#include <numeric>
 
 namespace Priority {
     std::vector<bool> GetCurrentSizes(const Product &product) {

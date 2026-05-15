@@ -1,10 +1,8 @@
 #include "DataHandler.h"
-
 #include <iostream>
 #include <set>
-#include <variant>
 #include "../TargetGroup.h"
-#include "../../Configurations/SizePriority.h"
+#include "../../ReportBuilder/Priority/SizePriority.h"
 
 namespace DataHandler {
     enum Columns {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "../../Configurations/ReportConfigurations.h"
+#include "../ReportConfigurations.h"
 #include "../../Product/Product.h"
 
 namespace Validation {
@@ -12,7 +12,8 @@ namespace Validation {
         HallNotEmpty,
         HallIsEmpty,
         UnderMinCount,
-        UnderMinSizeCount
+        UnderMinSizeCount,
+        AboveMinSizeCount
     };
 
     bool CanProductBeAdded(const Product &product, const std::vector<Check> &options, const ReportConfigurations &configurations);
