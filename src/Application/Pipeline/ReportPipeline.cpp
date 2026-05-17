@@ -14,8 +14,9 @@ namespace ReportPipeline {
         "Ост. в залі"
     };
 
-    void ClearSheets() {
+    void Run(const StoreConfig &config) {
         const AppConfiguration configuration;
+
         for (const auto &filePath: {configuration.textilesPath, configuration.footwearPath}) {
             for (const auto &sheetName: ALL_REPORT_SHEETS) {
                 try {
@@ -24,12 +25,8 @@ namespace ReportPipeline {
                 }
             }
         }
-    }
 
-    void Run(const StoreConfig &config) {
-        const AppConfiguration appCfg;
-
-        const auto raw = XlsxReader::Read(config.filePath, appCfg.readSheetId, appCfg.startRow);
+        const auto raw = XlsxReader::Read(config.filePath, configuration.readSheetId, configuration.startRow);
         const auto products = DataHandler::Parse(raw);
 
         for (const auto &def : config.reports) {

@@ -7,8 +7,6 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
     QApplication::setApplicationName("ReportBuilder");
 
-    ReportPipeline::ClearSheets();
-
     StoreTypeDialog dialog;
     if (dialog.exec() != QDialog::Accepted) {
         return 0;

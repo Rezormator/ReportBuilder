@@ -4,5 +4,4 @@
 
 namespace ReportPipeline {
     void Run(const StoreConfig &config);
-    void ClearSheets();
 }
