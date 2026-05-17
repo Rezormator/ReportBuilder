@@ -27,26 +27,14 @@ namespace ReportPipeline {
     }
 
     void Run(const StoreConfig &config) {
-        const AppConfiguration appConfiguration;
+        const AppConfiguration appCfg;
 
-        const auto rawData = XlsxReader::Read(
-            config.filePath,
-            appConfiguration.readSheetId,
-            appConfiguration.startRow,
-            appConfiguration.targetColumns
-        );
+        const auto raw = XlsxReader::Read(config.filePath, appCfg.readSheetId, appCfg.startRow);
+        const auto products = DataHandler::Parse(raw);
 
-        const auto products = DataHandler::Parse(rawData);
-
-        for (const auto &reportDefinition: config.reports) {
-            auto rows = reportDefinition.builder(products, config.params);
-            XlsxWriter::Write(
-                config.filePath,
-                reportDefinition.sheetName,
-                reportDefinition.header,
-                reportDefinition.columns,
-                rows
-            );
+        for (const auto &def : config.reports) {
+            auto rows = def.builder(products, config.params);
+            XlsxWriter::Write(config.filePath, def.sheetName, def.header, def.columns, rows);
         }
     }
 }

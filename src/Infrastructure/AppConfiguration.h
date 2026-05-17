@@ -9,5 +9,4 @@ struct AppConfiguration {
 
     int readSheetId = 0;
     int startRow = 10;
-    std::vector<int> targetColumns = {1, 4, 6, 7, 8, 11, 12};
 };
