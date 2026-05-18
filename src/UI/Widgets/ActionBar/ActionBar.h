@@ -3,6 +3,10 @@
 #include <QFrame>
 #include <QPushButton>
 #include <QProgressBar>
+#include <vector>
+
+#include "../../../Infrastructure/AppSettings.h"
+#include "../PresetButton/PresetButton.h"
 
 class ActionBar : public QFrame {
     Q_OBJECT
@@ -12,6 +16,8 @@ public:
 
     void SetBusy(bool busy) const;
 
+    [[nodiscard]] std::vector<StoreSettings> GetActiveSettings() const;
+
 signals:
     void GenerateReportRequested();
     void ClearReportRequested();
@@ -20,10 +26,11 @@ signals:
     void ExitRequested();
 
 private:
-    QPushButton *m_buttonGenerate = nullptr;
-    QPushButton *m_buttonClear = nullptr;
-    QPushButton *m_buttonPrint = nullptr;
-    QPushButton *m_buttonReload = nullptr;
-    QPushButton *m_buttonExit = nullptr;
-    QProgressBar *m_progressBar = nullptr;
+    PresetButton *m_presetButton   = nullptr;
+    QPushButton  *m_buttonGenerate = nullptr;
+    QPushButton  *m_buttonClear    = nullptr;
+    QPushButton  *m_buttonPrint    = nullptr;
+    QPushButton  *m_buttonReload   = nullptr;
+    QPushButton  *m_buttonExit     = nullptr;
+    QProgressBar *m_progressBar    = nullptr;
 };

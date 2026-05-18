@@ -24,11 +24,8 @@ namespace Validation {
                 case Check::UnderMinCount:
                     passes = product.totalCount < params.minCount;
                     break;
-                case Check::UnderMinSizeCount:
-                    passes = static_cast<int>(product.sizes.size()) < params.minSizeCount;
-                    break;
-                case Check::AboveMinSizeCount:
-                    passes = static_cast<int>(product.sizes.size()) >= params.minSizeCount;
+                case Check::AboveMinCount:
+                    passes = product.totalCount >= params.minCount;
                     break;
                 case Check::LowCount:
                     passes = product.totalCount <= params.lowCount;

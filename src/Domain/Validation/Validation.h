@@ -6,7 +6,6 @@
 struct ReportParams {
     int minCount = 4;
     int maxCount = 6;
-    int minSizeCount = 3;
     int lowCount = 3;
 };
 
@@ -18,8 +17,7 @@ namespace Validation {
         HallNotEmpty,
         HallIsEmpty,
         UnderMinCount,
-        UnderMinSizeCount,
-        AboveMinSizeCount,
+        AboveMinCount,
         LowCount
     };
 

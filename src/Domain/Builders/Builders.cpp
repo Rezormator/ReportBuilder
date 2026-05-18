@@ -185,7 +185,7 @@ namespace Builders {
             Validation::Check::MinTotalCount,
             Validation::Check::MaxHallCount,
             Validation::Check::HasStorageStock,
-            Validation::Check::AboveMinSizeCount
+            Validation::Check::AboveMinCount
         };
 
         for (auto &[id, product]: products) {

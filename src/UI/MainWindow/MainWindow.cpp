@@ -5,6 +5,7 @@
 #include "../../Application/XlsxLoader/XlsxLoader.h"
 #include "../../Application/PrintService/PrintService.h"
 #include "../../Infrastructure/AppConfiguration.h"
+#include "../../Infrastructure/AppSettings.h"
 
 #include <QApplication>
 #include <QMenuBar>
@@ -32,10 +33,11 @@ static QString ResolvePath(const std::string &relativePath) {
     return QDir::current().absoluteFilePath(QString::fromStdString(relativePath));
 }
 
-MainWindow::MainWindow(StoreType storeType, QWidget *parent)
-    : QMainWindow(parent), m_storeType(storeType), m_storeTypeName((storeType == StoreType::Concept) ? "Концепт" : "Дисконт") {
-    setWindowTitle(QString("ReportBuilder - %1").arg(m_storeTypeName));
-    resize(1200, 750);
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+{
+    setWindowTitle("ReportBuilder");
+    resize(1400, 800);
 
     if (const auto *screen = QApplication::primaryScreen()) {
         const auto availableGeometry = screen->availableGeometry();
@@ -43,7 +45,7 @@ MainWindow::MainWindow(StoreType storeType, QWidget *parent)
     }
 
     const AppConfiguration appConfiguration;
-    m_textilePath = ResolvePath(appConfiguration.textilesPath);
+    m_textilePath  = ResolvePath(appConfiguration.textilesPath);
     m_footwearPath = ResolvePath(appConfiguration.footwearPath);
 
     m_fileWatcher = new QFileSystemWatcher(this);
@@ -69,23 +71,22 @@ void MainWindow::SetupUI() {
 
     m_actionBar = new ActionBar(centralWidget);
     connect(m_actionBar, &ActionBar::GenerateReportRequested, this, &MainWindow::OnGenerateReport);
-    connect(m_actionBar, &ActionBar::ClearReportRequested, this, &MainWindow::OnClearReport);
-    connect(m_actionBar, &ActionBar::PrintRequested, this, &MainWindow::OnPrint);
-    connect(m_actionBar, &ActionBar::ReloadRequested, this, &MainWindow::OnReload);
-    connect(m_actionBar, &ActionBar::ExitRequested, this, &QWidget::close);
+    connect(m_actionBar, &ActionBar::ClearReportRequested,    this, &MainWindow::OnClearReport);
+    connect(m_actionBar, &ActionBar::PrintRequested,          this, &MainWindow::OnPrint);
+    connect(m_actionBar, &ActionBar::ReloadRequested,         this, &MainWindow::OnReload);
+    connect(m_actionBar, &ActionBar::ExitRequested,           this, &QWidget::close);
+    rootLayout->addWidget(m_actionBar);
 
     m_categoryTabs = new CategoryTabs(centralWidget);
     connect(m_categoryTabs, &CategoryTabs::SheetChanged, this, &MainWindow::OnSheetChanged);
-
-    rootLayout->addWidget(m_actionBar);
     rootLayout->addWidget(m_categoryTabs, 1);
 }
 
 void MainWindow::SetupMenuBar() {
     auto *fileMenu = menuBar()->addMenu("Файл");
 
-    auto *reloadAction = fileMenu->addAction(QApplication::style()->standardIcon(QStyle::SP_BrowserReload), "Оновити файли");
-
+    auto *reloadAction = fileMenu->addAction(
+        QApplication::style()->standardIcon(QStyle::SP_BrowserReload), "Оновити файли");
     reloadAction->setShortcut(QKeySequence(Qt::Key_F5));
     reloadAction->setShortcutContext(Qt::WindowShortcut);
     this->addAction(reloadAction);
@@ -110,7 +111,6 @@ void MainWindow::SetupMenuBar() {
     connect(clearReportAction, &QAction::triggered, this, &MainWindow::OnClearReport);
 
     auto *printMenu = menuBar()->addMenu("Друк");
-
     auto *printAction = printMenu->addAction("Друкувати поточний аркуш");
     printAction->setShortcut(QKeySequence("Ctrl+P"));
     printAction->setShortcutContext(Qt::WindowShortcut);
@@ -134,102 +134,78 @@ void MainWindow::RefreshAll() {
     RefreshCategory(0);
     RefreshCategory(1);
 
-    if (QFileInfo::exists(m_textilePath)) {
-        m_fileWatcher->addPath(m_textilePath);
-    }
-    if (QFileInfo::exists(m_footwearPath)) {
-        m_fileWatcher->addPath(m_footwearPath);
-    }
+    if (QFileInfo::exists(m_textilePath))  m_fileWatcher->addPath(m_textilePath);
+    if (QFileInfo::exists(m_footwearPath)) m_fileWatcher->addPath(m_footwearPath);
 
     SetBusy(false);
     m_statusBar->SetMessage("Готово");
 }
 
 void MainWindow::RefreshCategory(const int tabIndex) const {
-    const QString &path = (tabIndex == 0) ? m_textilePath : m_footwearPath;
-    SheetView *sheetView = (tabIndex == 0) ? m_categoryTabs->TextileView() : m_categoryTabs->FootwearView();
+    const QString  &path      = (tabIndex == 0) ? m_textilePath : m_footwearPath;
+    SheetView      *sheetView = (tabIndex == 0) ? m_categoryTabs->TextileView() : m_categoryTabs->FootwearView();
     sheetView->Load(XlsxLoader::Load(path));
 }
 
 void MainWindow::OnGenerateReport() {
-    const int tabIndex = m_categoryTabs->currentIndex();
+    const auto allSettings = m_actionBar->GetActiveSettings();
+
+    if (allSettings.empty()) {
+        QMessageBox::information(this, "Увага", "Немає активних блоків налаштувань.");
+        return;
+    }
 
     SetBusy(true);
-    const QString category = (tabIndex == 0) ? "текстилю" : "взуттю";
-    m_statusBar->SetMessage(QString("Формування звітів по %1...").arg(category));
+    m_statusBar->SetMessage("Формування звітів...");
     qApp->processEvents();
 
     try {
-        const StoreConfig config = (tabIndex == 0)
-                                       ? (m_storeType == StoreType::Concept
-                                              ? MakeConceptTextile()
-                                              : MakeDiscountTextile())
-                                       : (m_storeType == StoreType::Concept
-                                              ? MakeConceptFootwear()
-                                              : MakeDiscountFootwear());
+        ReportPipeline::RunAll(allSettings);
 
-        ReportPipeline::Run(config);
-
-        m_statusBar->SetMessage(QString("Звіти по %1 успішно сформовано.").arg(category));
-
-        RefreshCategory(tabIndex);
+        m_statusBar->SetMessage("Звіти успішно сформовано.");
+        RefreshCategory(0);
+        RefreshCategory(1);
         SetBusy(false);
 
-        QMessageBox::information(this, "Готово",
-            QString("Звіти по %1 сформовано.").arg(category));
+        QMessageBox::information(this, "Готово", "Звіти сформовано.");
         return;
     } catch (const std::exception &exception) {
         QMessageBox::critical(this, "Помилка",
-            QString("Не вдалося сформувати звіти:\n%1") .arg(QString::fromStdString(exception.what())));
+            QString("Не вдалося сформувати звіти:\n%1").arg(QString::fromStdString(exception.what())));
         m_statusBar->SetMessage("Помилка формування звіту.", true);
     }
 
-    RefreshCategory(tabIndex);
+    RefreshCategory(0);
+    RefreshCategory(1);
     SetBusy(false);
 }
 
 void MainWindow::OnClearReport() {
     const int tabIndex = m_categoryTabs->currentIndex();
-    const QString category = (tabIndex == 0) ? "текстилю" : "взуттю";
+    const QString category = (tabIndex == 0) ? "текстилю" : "взуття";
 
     const auto answer = QMessageBox::question(
         this, "Очистити звіти",
         QString("Видалити всі звітні аркуші для %1?").arg(category),
-        QMessageBox::Yes | QMessageBox::No,
-        QMessageBox::No);
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
-    if (answer != QMessageBox::Yes) {
-        return;
-    }
+    if (answer != QMessageBox::Yes) return;
 
     SetBusy(true);
     m_statusBar->SetMessage(QString("Очищення звітів по %1...").arg(category));
     qApp->processEvents();
 
-    try {
-        const StoreConfig config = (tabIndex == 0)
-                                       ? (m_storeType == StoreType::Concept
-                                              ? MakeConceptTextile()
-                                              : MakeDiscountTextile())
-                                       : (m_storeType == StoreType::Concept
-                                              ? MakeConceptFootwear()
-                                              : MakeDiscountFootwear());
+    const AppConfiguration appCfg;
+    const std::string &filePath = (tabIndex == 0) ? appCfg.textilesPath : appCfg.footwearPath;
 
-        const AppConfiguration appCfg;
-        const std::string &filePath = config.filePath;
-        for (const auto &def: config.reports) {
-            try {
-                XlsxWriter::DeleteSheet(filePath, def.sheetName);
-            } catch (...) {
-            }
+    try {
+        for (const auto &sheetName : ReportPipeline::ALL_REPORT_SHEETS) {
+            try { XlsxWriter::DeleteSheet(filePath, sheetName); } catch (...) {}
         }
 
-        m_statusBar->SetMessage(
-            QString("Звіти по %1 очищено.").arg(category));
-
+        m_statusBar->SetMessage(QString("Звіти по %1 очищено.").arg(category));
         RefreshCategory(tabIndex);
         SetBusy(false);
-
         QMessageBox::information(this, "Готово",
             QString("Звітні аркуші по %1 видалено.").arg(category));
         return;
@@ -244,8 +220,8 @@ void MainWindow::OnClearReport() {
 }
 
 void MainWindow::OnPrint() {
-    SheetView *sheetView = m_categoryTabs->ActiveSheetView();
-    QTableWidget *table = sheetView ? sheetView->ActiveTable() : nullptr;
+    SheetView    *sheetView = m_categoryTabs->ActiveSheetView();
+    QTableWidget *table     = sheetView ? sheetView->ActiveTable() : nullptr;
 
     if (!table || table->rowCount() == 0) {
         QMessageBox::information(this, "Друк", "Немає даних для друку на поточному аркуші.");
@@ -255,9 +231,7 @@ void MainWindow::OnPrint() {
     PrintService::Print(table, sheetView->ActiveTabText(), this);
 }
 
-void MainWindow::OnReload() {
-    RefreshAll();
-}
+void MainWindow::OnReload() { RefreshAll(); }
 
 void MainWindow::OnXlsxFileChanged(const QString &path) {
     QTimer::singleShot(500, this, [this, path]() {

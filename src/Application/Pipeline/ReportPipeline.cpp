@@ -17,21 +17,55 @@ namespace ReportPipeline {
     void Run(const StoreConfig &config) {
         const AppConfiguration configuration;
 
-        for (const auto &filePath: {configuration.textilesPath, configuration.footwearPath}) {
-            for (const auto &sheetName: ALL_REPORT_SHEETS) {
+        for (const auto &filePath : {configuration.textilesPath, configuration.footwearPath}) {
+            for (const auto &sheetName : ALL_REPORT_SHEETS) {
                 try {
                     XlsxWriter::DeleteSheet(filePath, sheetName);
-                } catch (...) {
-                }
+                } catch (...) {}
             }
         }
 
-        const auto raw = XlsxReader::Read(config.filePath, configuration.readSheetId, configuration.startRow);
+        const auto raw      = XlsxReader::Read(config.filePath, configuration.readSheetId, configuration.startRow);
         const auto products = DataHandler::Parse(raw);
 
         for (const auto &def : config.reports) {
             auto rows = def.builder(products, config.params);
             XlsxWriter::Write(config.filePath, def.sheetName, def.header, def.columns, rows);
+        }
+    }
+
+    void RunAll(const std::vector<StoreSettings> &allSettings) {
+        const AppConfiguration configuration;
+
+        for (const auto &filePath : {configuration.textilesPath, configuration.footwearPath}) {
+            for (const auto &sheetName : ALL_REPORT_SHEETS) {
+                try { XlsxWriter::DeleteSheet(filePath, sheetName); } catch (...) {}
+            }
+        }
+
+        for (const auto &settings : allSettings) {
+            {
+                const StoreConfig config = MakeTextileConfig(settings.textileParams, settings.textileReports);
+                if (!config.reports.empty()) {
+                    const auto raw      = XlsxReader::Read(config.filePath, configuration.readSheetId, configuration.startRow);
+                    const auto products = DataHandler::Parse(raw);
+                    for (const auto &def : config.reports) {
+                        auto rows = def.builder(products, config.params);
+                        XlsxWriter::Write(config.filePath, def.sheetName, def.header, def.columns, rows);
+                    }
+                }
+            }
+            {
+                const StoreConfig config = MakeFootwearConfig(settings.footwearParams, settings.footwearReports);
+                if (!config.reports.empty()) {
+                    const auto raw      = XlsxReader::Read(config.filePath, configuration.readSheetId, configuration.startRow);
+                    const auto products = DataHandler::Parse(raw);
+                    for (const auto &def : config.reports) {
+                        auto rows = def.builder(products, config.params);
+                        XlsxWriter::Write(config.filePath, def.sheetName, def.header, def.columns, rows);
+                    }
+                }
+            }
         }
     }
 }

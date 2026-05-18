@@ -11,7 +11,5 @@ struct StoreConfig {
     std::vector<ReportDef> reports;
 };
 
-StoreConfig MakeConceptTextile();
-StoreConfig MakeConceptFootwear();
-StoreConfig MakeDiscountTextile();
-StoreConfig MakeDiscountFootwear();
+StoreConfig MakeTextileConfig(const ReportParams &params, struct TextileReportFlags flags);
+StoreConfig MakeFootwearConfig(const ReportParams &params, struct FootwearReportFlags flags);

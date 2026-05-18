@@ -22,10 +22,8 @@ qt_add_executable(ReportBuilder
         src/Application/Pipeline/ReportPipeline.h
         src/Application/Config/ReportDef.h
         src/Application/Config/StoreConfig.h
-        src/Application/Config/ConceptTextile.cpp
-        src/Application/Config/ConceptFootwear.cpp
-        src/Application/Config/DiscountTextile.cpp
-        src/Application/Config/DiscountFootwear.cpp
+        src/Application/Config/TextileConfig.cpp
+        src/Application/Config/FootwearConfig.cpp
         src/Application/XlsxLoader/XlsxLoader.cpp
         src/Application/XlsxLoader/XlsxLoader.h
         src/Application/PrintService/PrintService.cpp
@@ -44,6 +42,7 @@ qt_add_executable(ReportBuilder
 
         # Infrastructure
         src/Infrastructure/AppConfiguration.h
+        src/Infrastructure/AppSettings.h
         src/Infrastructure/DataHandler/DataHandler.cpp
         src/Infrastructure/DataHandler/DataHandler.h
         src/Infrastructure/SizePriority/SizePriority.cpp
@@ -52,12 +51,18 @@ qt_add_executable(ReportBuilder
         src/Infrastructure/XlsxReader/XlsxReader.h
         src/Infrastructure/XlsxWriter/XlsxWriter.cpp
         src/Infrastructure/XlsxWriter/XlsxWriter.h
+        src/Infrastructure/PresetStorage/PresetStorage.cpp
+        src/Infrastructure/PresetStorage/PresetStorage.h
 
         # UI
         src/UI/MainWindow/MainWindow.cpp
         src/UI/MainWindow/MainWindow.h
         src/UI/Widgets/ActionBar/ActionBar.cpp
         src/UI/Widgets/ActionBar/ActionBar.h
+        src/UI/Widgets/PresetButton/PresetButton.cpp
+        src/UI/Widgets/PresetButton/PresetButton.h
+        src/UI/Widgets/PresetButton/PresetSettingsDialog.cpp
+        src/UI/Widgets/PresetButton/PresetSettingsDialog.h
         src/UI/Widgets/CategoryTabs/CategoryTabs.cpp
         src/UI/Widgets/CategoryTabs/CategoryTabs.h
         src/UI/Widgets/SheetView/SheetView.cpp
@@ -66,8 +71,6 @@ qt_add_executable(ReportBuilder
         src/UI/Widgets/SheetView/SheetTable.h
         src/UI/Widgets/StatusBar/StatusBar.cpp
         src/UI/Widgets/StatusBar/StatusBar.h
-        src/UI/Dialogs/StoreTypeDialog/StoreTypeDialog.cpp
-        src/UI/Dialogs/StoreTypeDialog/StoreTypeDialog.h
         src/UI/Theme/Theme.cpp
         src/UI/Theme/Theme.h
 )
